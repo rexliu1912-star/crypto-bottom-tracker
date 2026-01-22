@@ -26,9 +26,9 @@ tracker.log
 .idea/
 .claude/
 
-# 生成的数据（可选保留示例）
-# web_data.json
-# dashboard.png
+# 生成的数据
+web_data.json
+dashboard.png
 
 # 环境变量
 .env
