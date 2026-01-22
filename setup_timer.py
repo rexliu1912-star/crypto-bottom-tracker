@@ -1,25 +1,37 @@
 import os
 import plistlib
 import subprocess
+import sys
 
 # =================配置区域=================
-# 您的 Python 路径
-PYTHON_PATH = "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3"
-# 您的脚本路径
-SCRIPT_PATH = "/Users/rexliu1912/vibe-coding/crypto-bottom-tracker/crypto-bottom-tracker.py"
-# 工作目录 (脚本所在的文件夹)
-WORK_DIR = "/Users/rexliu1912/vibe-coding/crypto-bottom-tracker/"
+# 自动检测路径
+PYTHON_PATH = sys.executable  # 自动使用当前 Python
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SCRIPT_PATH = os.path.join(SCRIPT_DIR, "crypto-bottom-tracker.py")
+WORK_DIR = SCRIPT_DIR
 
 # 任务名称 (类似 ID)
 LABEL = "com.crypto.bottom-tracker"
 # =========================================
 
 def create_launch_agent():
+    # 读取 .env 文件中的环境变量
+    env_vars = {}
+    env_file = os.path.join(WORK_DIR, '.env')
+    if os.path.exists(env_file):
+        with open(env_file, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    env_vars[key.strip()] = value.strip()
+
     # 1. 定义 plist 内容 (Mac 任务描述文件)
     plist_content = {
         'Label': LABEL,
         'ProgramArguments': [PYTHON_PATH, SCRIPT_PATH],
         'WorkingDirectory': WORK_DIR,
+        'EnvironmentVariables': env_vars,  # 添加环境变量
         'StartCalendarInterval': {
             'Hour': 8,     # 每天早上 8 点
             'Minute': 0    # 0 分
