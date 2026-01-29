@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 缓存文件
+.bss_cache.txt
+.miner_cache.txt
+.ssr_cache.txt
+.vix_cache.txt
+.mrs_cache.txt
+
+# 日志文件
+*.log
+tracker.log
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+.claude/
+
+# 生成的数据
+web_data.json
+dashboard.png
+
+# 环境变量
+.env
+.env.local
+.bss_cache.txt
+.miner_cache.txt
+.ssr_cache.txt
+.vix_cache.txt
+dashboard.png
+web_data.json

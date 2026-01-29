@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐻 加密熊市底部追踪器</title>
+    <style>
+        :root {
+            --bg-color: #FFF8EB;        /* 品牌暖色背景 */
+            --brand-color: #8953d1;     /* 品牌紫色 */
+            --text-main: #2D3748;       /* 深灰主文本 */
+            --text-sec: #718096;        /* 浅灰次文本 */
+            --card-bg: #FFFFFF;         /* 白色卡片 */
+            
+            --status-green: #48BB78;
+            --status-yellow: #ECC94B;
+            --status-red: #F56565;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            /* 减少页面整体边距 */
+            padding: 20px; 
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 900px; /* 稍微收窄容器，增加紧凑感 */
+            margin: 0 auto;
+        }
+
+        /* 头部设计 - 更加紧凑 */
+        .header {
+            text-align: center;
+            margin-bottom: 25px; /* 从50px减为25px */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header h1 {
+            font-size: 2em; /* 从2.8em减为2em */
+            font-weight: 800;
+            color: var(--brand-color);
+            letter-spacing: -1px;
+            margin: 0;
+        }
+
+        .timestamp {
+            color: var(--text-sec);
+            font-size: 0.85em;
+            font-weight: 500;
+            background: rgba(137, 83, 209, 0.08);
+            padding: 3px 12px;
+            border-radius: 20px;
+        }
+
+        /* 摘要区域 */
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 双列布局 */
+            gap: 15px; /* 间距缩小 */
+            margin-bottom: 25px; /* 间距缩小 */
+        }
+
+        .summary-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px; /* 内边距缩小 */
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(137, 83, 209, 0.05);
+            border: 1px solid rgba(137, 83, 209, 0.1);
+        }
+
+        .summary-card h3 {
+            color: var(--text-sec);
+            margin-bottom: 5px;
+            font-size: 0.8em;
+            text-transform: uppercase;
+        }
+
+        .green-count {
+            font-size: 2.5em; /* 字体缩小 */
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .green-count.green { color: var(--status-green); }
+        .green-count.yellow { color: var(--status-yellow); }
+        .green-count.red { color: var(--status-red); }
+
+        .market-status {
+            font-size: 1.2em; /* 字体缩小 */
+            font-weight: bold;
+            margin-top: 5px;
+            color: var(--brand-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%; 
+            min-height: 44px; /* 保持与左侧数字对齐的高度 */
+        }
+
+        /* 详细指标区域 - 改为网格布局以节省垂直空间 */
+        .indicators {
+            display: grid;
+            /* 电脑端显示2列，自动填充 */
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); 
+            gap: 15px;
+        }
+
+        .indicator-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 15px 20px; /* 内边距大幅缩小 */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.03);
+            transition: all 0.3s ease;
+        }
+
+        .indicator-card:hover {
+            box-shadow: 0 5px 20px rgba(137, 83, 209, 0.1);
+            border-color: rgba(137, 83, 209, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .indicator-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-dot {
+            width: 12px; /* 圆点缩小 */
+            height: 12px;
+            border-radius: 50%;
+            position: relative;
+            flex-shrink: 0;
+        }
+        
+        .status-dot::after {
+            content: '';
+            position: absolute;
+            top: -3px; left: -3px; right: -3px; bottom: -3px;
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+
+        .status-dot.green { background: var(--status-green); }
+        .status-dot.green::after { background: var(--status-green); }
+        .status-dot.yellow { background: var(--status-yellow); }
+        .status-dot.yellow::after { background: var(--status-yellow); }
+        .status-dot.red { background: var(--status-red); }
+        .status-dot.red::after { background: var(--status-red); }
+
+        .indicator-name {
+            font-size: 1em; /* 字体缩小 */
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .indicator-right {
+            text-align: right;
+        }
+
+        .indicator-status-text {
+            font-size: 0.8em;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 2px;
+        }
+        
+        .indicator-status-text.green { color: var(--status-green); }
+        .indicator-status-text.yellow { color: #D69E2E; }
+        .indicator-status-text.red { color: var(--status-red); }
+
+        .indicator-data {
+            font-size: 0.85em;
+            color: var(--text-sec);
+            font-family: 'SF Mono', 'Menlo', monospace;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.6em; }
+            /* 手机端保持单列，但更加紧凑 */
+            .indicators { grid-template-columns: 1fr; gap: 10px; }
+            .indicator-card { padding: 12px 15px; }
+            .summary { gap: 10px; margin-bottom: 20px; }
+            .summary-card { padding: 15px; }
+        }
+
+        .loading, .error {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-sec);
+            font-size: 0.9em;
+        }
+        .error { color: var(--status-red); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Crypto Bottom Tracker</h1>
+            <div class="timestamp" id="timestamp">等待更新...</div>
+        </div>
+
+        <div id="content">
+            <div class="loading">正在加载...</div>
+        </div>
+    </div>
+
+    <script>
+        function loadData() {
+            const url = 'web_data.json?t=' + new Date().getTime();
+            fetch(url)
+                .then(r => r.ok ? r.json() : Promise.reject('Read Error'))
+                .then(data => displayData(data))
+                .catch(e => {
+                    document.getElementById('content').innerHTML = `
+                        <div class="error">⚠️ 暂无数据，等待后台更新</div>`;
+                });
+        }
+
+        function displayData(data) {
+            document.getElementById('timestamp').textContent = `${data.timestamp}`;
+
+            const summaryHTML = `
+                <div class="summary">
+                    <div class="summary-card">
+                        <h3>底部信号 (绿灯)</h3>
+                        <div class="green-count ${data.greenCount >= 4 ? 'green' : data.greenCount >= 3 ? 'yellow' : 'red'}">
+                            ${data.greenCount}<span style="font-size:0.5em;color:var(--text-sec);font-weight:400">/${data.totalCount}</span>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>加权评分</h3>
+                        <div class="green-count ${data.weightedScore >= 70 ? 'green' : data.weightedScore >= 55 ? 'yellow' : 'red'}">
+                            ${data.weightedScore || 0}<span style="font-size:0.5em;color:var(--text-sec);font-weight:400">分</span>
+                        </div>
+                    </div>
+                    <div class="summary-card" style="grid-column: 1 / -1;">
+                        <h3>市场状态</h3>
+                        <div class="market-status">
+                            ${data.marketStatus}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const indicatorsHTML = data.indicators.map(ind => `
+                <div class="indicator-card">
+                    <div class="indicator-left">
+                        <div class="status-dot ${ind.status}"></div>
+                        <div class="indicator-name">${ind.name}</div>
+                    </div>
+                    <div class="indicator-right">
+                        <span class="indicator-status-text ${ind.status}">
+                           ${ind.statusText || (ind.status==='green'?'绿灯':ind.status==='yellow'?'黄灯':'红灯')}
+                        </span>
+                        <div class="indicator-data">
+                            ${ind.data.replace(/^[🟢🟡🔴]\s*\((.*)\)$/, '$1')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('content').innerHTML = summaryHTML + `
+                <div class="indicators">${indicatorsHTML}</div>
+            `;
+        }
+
+        loadData();
+        setInterval(loadData, 30000);
+    </script>
+</body>
+</html>
