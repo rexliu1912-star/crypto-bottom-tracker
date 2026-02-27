@@ -417,10 +417,6 @@ def run_tracker():
         plt.savefig(path, dpi=200, facecolor='black')
         plt.close()
         
-        # 推送
-        report = f"🐻 <b>加密追踪</b>\n绿灯: {green_count}/5\n状态: {mkt_status}"
-        send_telegram_message(report)
-        send_telegram_photo(path)
         print("✅ 执行完成")
     except Exception as e:
         print(f"❌ 绘图/推送错误: {e}")
